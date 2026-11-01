@@ -286,7 +286,7 @@ function App() {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="/" aria-label="LinkedIn LARP Generator home">
-          <span className="brand-mark">in</span>
+          <span className="brand-mark">✦</span>
           <span>LinkedIn <strong>LARP</strong></span>
         </a>
         <span className="header-note">For people who are open to being perceived as innovative.</span>
