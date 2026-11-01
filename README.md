@@ -1,16 +1,29 @@
-# React + Vite
+# LinkedIn LARP Generator
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A frontend-only React/Vite hackathon project that turns a real accomplishment into a polished LinkedIn post with just enough self-awareness.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Name, job title, and accomplishment inputs
+- Professional, humblebrag, and absolutely unhinged tones
+- 11 varied post templates with practical lessons and tone-specific hashtags
+- Randomized fictional engagement stats
+- Responsive LinkedIn-style result card
+- Copy-to-clipboard support
+- No backend, API keys, or stored user data
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the Oxlint configuration
+## Validate and build
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm run lint
+npm run build
+```
+
+The generated `dist/` folder can be deployed as a static site on Render. Use `npm run build` as the build command and `dist` as the publish directory.
