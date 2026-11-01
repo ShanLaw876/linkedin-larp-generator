@@ -42,7 +42,9 @@ npm run lint
 npm run build
 ```
 
-The generated `dist/` folder can be deployed as a static site on Render. Use `npm run build` as the build command and `dist` as the publish directory.
+The app can be deployed as a Render web service. Use `npm run build` as the build command and
+`npm run start` as the start command. The Node server serves both the built frontend and the
+`/api` endpoint.
 
 ## AI LARP mode
 
@@ -85,7 +87,15 @@ Implemented locally:
 - API timeouts, missing configuration, rate limits, non-2xx responses, and malformed output are
   reported without exposing the Featherless key.
 
-Render deployment configuration is intentionally left for the next step.
+For Render, create a web service using:
+
+- Build command: `npm run build`
+- Start command: `npm run start`
+- Environment variable: `FEATHERLESS_API_KEY`
+- Optional environment variable: `FEATHERLESS_MODEL`
+
+Do not use the old static-site publish directory setup for AI mode; static hosting cannot run the
+server-side Featherless proxy.
 
 Required Render environment variables:
 

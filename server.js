@@ -1,8 +1,12 @@
 import { createServer } from 'node:http'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const port = Number(process.env.PORT || 8787)
 const model = process.env.FEATHERLESS_MODEL || 'meta-llama/Meta-Llama-3.1-8B-Instruct'
 const featherlessUrl = 'https://api.featherless.ai/v1/chat/completions'
+const publicDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'dist')
 
 const jsonHeaders = {
   'Content-Type': 'application/json',
@@ -12,6 +16,36 @@ const jsonHeaders = {
 function sendJson(response, status, payload) {
   response.writeHead(status, jsonHeaders)
   response.end(JSON.stringify(payload))
+}
+
+async function serveFrontend(pathname, response) {
+  const filePath = pathname === '/' ? '/index.html' : pathname
+  const safePath = path.normalize(filePath).replace(/^(\.\.[/\\])+/, '')
+  const absolutePath = path.join(publicDirectory, safePath)
+  const contentTypes = {
+    '.css': 'text/css; charset=utf-8',
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+  }
+
+  try {
+    const content = await readFile(absolutePath)
+    response.writeHead(200, {
+      'Content-Type': contentTypes[path.extname(absolutePath)] || 'application/octet-stream',
+    })
+    response.end(content)
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      sendJson(response, 500, { error: 'Unable to serve the frontend.' })
+      return
+    }
+
+    const index = await readFile(path.join(publicDirectory, 'index.html'))
+    response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+    response.end(index)
+  }
 }
 
 function extractJson(content) {
@@ -134,12 +168,20 @@ async function generatePost(input) {
 }
 
 const server = createServer(async (request, response) => {
-  if (request.method === 'GET' && request.url === '/api/health') {
+  const requestUrl = new URL(request.url || '/', 'http://localhost')
+  const pathname = requestUrl.pathname
+
+  if (request.method === 'GET' && pathname === '/api/health') {
     sendJson(response, 200, { ok: true })
     return
   }
 
-  if (request.method !== 'POST' || request.url !== '/api/generate') {
+  if (request.method === 'GET' && !pathname.startsWith('/api/')) {
+    await serveFrontend(pathname, response)
+    return
+  }
+
+  if (request.method !== 'POST' || pathname !== '/api/generate') {
     sendJson(response, 404, { error: 'Not found.' })
     return
   }
