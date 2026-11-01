@@ -105,6 +105,36 @@ h1 span { color: var(--blue); }
 }
 h2 { font-size: 25px; letter-spacing: -.8px; margin: 0 0 29px; }
 .required-note { padding-top: 7px; }
+.mode-toggle {
+  background: #eef2f7;
+  border-radius: 5px;
+  display: flex;
+  gap: 3px;
+  margin: -8px 0 24px;
+  padding: 3px;
+}
+.mode-toggle button {
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  color: var(--muted);
+  flex: 1;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 9px 7px;
+}
+.mode-toggle button.active {
+  background: white;
+  box-shadow: 0 1px 3px rgba(28, 57, 91, .12);
+  color: var(--ink);
+}
+.mode-toggle button span {
+  color: var(--blue);
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  margin-left: 3px;
+  text-transform: uppercase;
+}
 label {
   color: var(--ink);
   display: block;
@@ -155,6 +185,16 @@ input::placeholder, textarea::placeholder { color: #a4afbf; }
 .tone-option strong { font-size: 12px; }
 .tone-option small { color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 2px; }
 .form-error { color: #c44132; font-size: 12px; margin: -4px 0 14px; }
+.form-error p { margin: 0 0 7px; }
+.form-error button {
+  background: transparent;
+  border: 0;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0;
+  text-decoration: underline;
+}
 .generate-button {
   background: var(--blue);
   border: 0;
@@ -166,6 +206,7 @@ input::placeholder, textarea::placeholder { color: #a4afbf; }
   transition: background .2s, transform .2s;
   width: 100%;
 }
+.generate-button:disabled { cursor: wait; opacity: .7; transform: none; }
 .generate-button:hover { background: var(--blue-dark); transform: translateY(-1px); }
 .generate-button span { float: right; font-size: 20px; line-height: 12px; }
 .fine-print { margin: 12px 0 0; text-align: center; }

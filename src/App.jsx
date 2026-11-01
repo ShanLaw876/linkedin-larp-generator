@@ -146,6 +146,8 @@ function App() {
   const [post, setPost] = useState(null)
   const [copyStatus, setCopyStatus] = useState('Copy post')
   const [error, setError] = useState('')
+  const [mode, setMode] = useState('classic')
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const selectedTone = toneOptions.find((tone) => tone.id === form.tone)
   const initials = useMemo(
@@ -165,22 +167,12 @@ function App() {
     setError('')
   }
 
-  function generatePost(event) {
-    event.preventDefault()
-    const name = form.name.trim()
-    const role = form.role.trim()
-    const win = form.win.trim()
-
-    if (!name || !role || !win) {
-      setError('Your personal brand needs all three fields before it can scale.')
-      return
-    }
-
+  function createClassicPost(name, role, win) {
     const options = templates[form.tone]
     const template = options[Math.floor(Math.random() * options.length)]
     const seed = name.length + role.length + win.length + Date.now()
 
-    setPost({
+    return {
       ...template,
       name,
       role,
@@ -192,8 +184,75 @@ function App() {
         day: 'numeric',
         year: 'numeric',
       }),
+      source: 'classic',
+    }
+  }
+
+  async function generateAiPost(name, role, win) {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, role, win, tone: form.tone }),
     })
-    setCopyStatus('Copy post')
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'AI generation failed. Classic LARP is still available.')
+    }
+
+    const generated = data.post
+    return {
+      ...generated,
+      name,
+      role,
+      win,
+      body: () => generated.body,
+      stats: makeStats(form.tone, Date.now()),
+      generatedAt: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      source: 'ai',
+    }
+  }
+
+  async function generatePost(event) {
+    event.preventDefault()
+    const name = form.name.trim()
+    const role = form.role.trim()
+    const win = form.win.trim()
+
+    if (!name || !role || !win) {
+      setError('Your personal brand needs all three fields before it can scale.')
+      return
+    }
+
+    setError('')
+    setIsGenerating(true)
+
+    try {
+      const generatedPost =
+        mode === 'ai'
+          ? await generateAiPost(name, role, win)
+          : createClassicPost(name, role, win)
+      setPost(generatedPost)
+      setCopyStatus('Copy post')
+    } catch (generationError) {
+      setError(generationError.message)
+      setPost(null)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  function useClassicFallback() {
+    setMode('classic')
+    setError('')
+    if (form.name.trim() && form.role.trim() && form.win.trim()) {
+      setPost(createClassicPost(form.name.trim(), form.role.trim(), form.win.trim()))
+      setCopyStatus('Copy post')
+    }
   }
 
   async function copyPost() {
@@ -237,6 +296,23 @@ function App() {
               <h2>Set the scene</h2>
             </div>
             <span className="required-note">* required</span>
+          </div>
+
+          <div className="mode-toggle" aria-label="Generation mode">
+            <button
+              className={mode === 'classic' ? 'active' : ''}
+              type="button"
+              onClick={() => { setMode('classic'); setError('') }}
+            >
+              Classic LARP
+            </button>
+            <button
+              className={mode === 'ai' ? 'active' : ''}
+              type="button"
+              onClick={() => { setMode('ai'); setError('') }}
+            >
+              AI LARP <span>beta</span>
+            </button>
           </div>
 
           <label>
@@ -288,11 +364,21 @@ function App() {
             </div>
           </div>
 
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="generate-button" type="submit">
-            Generate thought leadership <span>→</span>
+          {error && (
+            <div className="form-error" role="alert">
+              <p>{error}</p>
+              {mode === 'ai' && (
+                <button type="button" onClick={useClassicFallback}>Use Classic LARP instead</button>
+              )}
+            </div>
+          )}
+          <button className="generate-button" type="submit" disabled={isGenerating}>
+            {isGenerating ? 'Consulting the personal brand...' : mode === 'ai' ? 'Generate with Featherless AI' : 'Generate thought leadership'}
+            <span>→</span>
           </button>
-          <p className="fine-print">No AI. No data storage. Just confidence.</p>
+          <p className="fine-print">
+            {mode === 'ai' ? 'AI-powered writing. Your key stays server-side.' : 'Template-powered writing. No data storage. Just confidence.'}
+          </p>
         </form>
 
         <div className="result-area">
@@ -301,7 +387,7 @@ function App() {
               <p className="section-kicker">02 / THE LARP</p>
               <h2>Your viral moment</h2>
             </div>
-            {post && <span className="live-pill"><i /> Live on LinkedIn*</span>}
+            {post && <span className="live-pill"><i /> {post.source === 'ai' ? 'Featherless AI' : 'Classic LARP'}</span>}
           </div>
 
           {post ? (
