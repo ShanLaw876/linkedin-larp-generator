@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const port = Number(process.env.PORT || 8787)
-const model = process.env.FEATHERLESS_MODEL || 'meta-llama/Meta-Llama-3.1-8B-Instruct'
+const model = process.env.FEATHERLESS_MODEL || 'Qwen/Qwen3-8B'
 const featherlessUrl = 'https://api.featherless.ai/v1/chat/completions'
 const publicDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'dist')
 

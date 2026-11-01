@@ -31,7 +31,7 @@ variables before starting the API server:
 
 ```bash
 FEATHERLESS_API_KEY=your-key \
-FEATHERLESS_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct \
+FEATHERLESS_MODEL=Qwen/Qwen3-8B \
 npm run api
 ```
 
@@ -68,9 +68,10 @@ Featherless AI
 
 - The browser will never receive `FEATHERLESS_API_KEY`.
 - The server will call `https://api.featherless.ai/v1/chat/completions`.
-- The initial model target will be `meta-llama/Meta-Llama-3.1-8B-Instruct`, subject to
-  confirmation that it is enabled for the LARPHacks account. The model should be configurable
-  with `FEATHERLESS_MODEL` so it can be changed without a code update.
+- The default model target is `Qwen/Qwen3-8B`, which Featherless lists as a text-generation model
+  suitable for conversational writing. The model remains configurable with `FEATHERLESS_MODEL`.
+  The previously used Meta Llama model is gated for this organization unless Hugging Face OAuth is
+  connected, so it should not be used without that extra setup.
 - The server will send the user's accomplishment, role, selected tone, and optional classic
   template style as structured prompt data.
 - The prompt will require a credible post under 180 words, one specific takeaway, and 2–4
@@ -101,5 +102,5 @@ Required Render environment variables:
 
 ```text
 FEATHERLESS_API_KEY=your-key
-FEATHERLESS_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct
+FEATHERLESS_MODEL=Qwen/Qwen3-8B
 ```
