@@ -282,6 +282,20 @@ input::placeholder, textarea::placeholder { color: #a4afbf; }
 .reach-meter i { background: var(--blue); border-radius: 4px; display: block; height: 100%; width: 78%; }
 .copy-button { background: var(--ink); border: 0; border-radius: 8px; color: white; font-size: 12px; font-weight: 700; margin-top: 15px; padding: 13px; transition: background .2s, transform .2s; width: 100%; }
 .copy-button:hover { background: var(--blue); transform: translateY(-1px); }
+.post-actions { display: flex; gap: 10px; }
+.post-actions .copy-button, .download-button { flex: 1; }
+.download-button {
+  background: var(--blue);
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 15px;
+  padding: 13px;
+  transition: background .2s, transform .2s;
+}
+.download-button:hover { background: var(--blue-dark); transform: translateY(-1px); }
 .empty-card { align-items: center; background: rgba(255, 255, 255, .72); border-style: dashed; display: flex; flex-direction: column; justify-content: center; min-height: 455px; padding: 40px; text-align: center; }
 .empty-icon { color: var(--orange); font-size: 34px; margin-bottom: 13px; }
 .empty-card h3 { font-size: 22px; margin: 0 0 9px; }
@@ -303,6 +317,7 @@ footer b { color: var(--orange); font-size: 15px; margin-left: 5px; }
   .topbar { min-height: 65px; }
   .intro { padding-top: 42px; }
   .post-card { padding: 17px; }
+  .post-actions { flex-direction: column; gap: 0; }
   .engagement-actions { font-size: 10px; }
   .empty-card { min-height: 370px; }
   footer { display: block; line-height: 2; }
