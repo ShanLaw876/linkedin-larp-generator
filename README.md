@@ -3,6 +3,8 @@
 Turn a real accomplishment into a polished LinkedIn post with just enough self-awareness.
 Classic LARP uses local templates; AI LARP uses Featherless AI for more personalized writing.
 
+Deployed Demo: https://linkedin-larp-ai.onrender.com/
+
 ## Features
 
 - Name, job title, accomplishment, and tone inputs
