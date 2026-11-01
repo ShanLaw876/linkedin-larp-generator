@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { toPng } from 'html-to-image'
 import './App.css'
 
 const templates = {
@@ -148,6 +149,8 @@ function App() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState('classic')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [downloadStatus, setDownloadStatus] = useState('Download PNG')
+  const postCardRef = useRef(null)
 
   const selectedTone = toneOptions.find((tone) => tone.id === form.tone)
   const initials = useMemo(
@@ -282,6 +285,27 @@ function App() {
     }
   }
 
+  async function downloadPost() {
+    if (!postCardRef.current) return
+
+    try {
+      setDownloadStatus('Preparing PNG...')
+      const dataUrl = await toPng(postCardRef.current, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+        cacheBust: true,
+      })
+      const link = document.createElement('a')
+      link.download = 'linkedin-larp-post.png'
+      link.href = dataUrl
+      link.click()
+      setDownloadStatus('Downloaded ✓')
+      window.setTimeout(() => setDownloadStatus('Download PNG'), 2200)
+    } catch {
+      setDownloadStatus('Download failed — try again')
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -404,7 +428,8 @@ function App() {
           </div>
 
           {post ? (
-            <article className="post-card">
+            <>
+              <article className="post-card" ref={postCardRef}>
               <div className="post-topline">
                 <div className="avatar">{initials}</div>
                 <div className="profile-info">
@@ -436,8 +461,12 @@ function App() {
                 <strong>{post.stats.impressions} impressions</strong>
                 <div><i /></div>
               </div>
-              <button className="copy-button" type="button" onClick={copyPost}>{copyStatus}</button>
-            </article>
+              </article>
+              <div className="post-actions">
+                <button className="copy-button" type="button" onClick={copyPost}>{copyStatus}</button>
+                <button className="download-button" type="button" onClick={downloadPost}>{downloadStatus}</button>
+              </div>
+            </>
           ) : (
             <div className="empty-card">
               <span className="empty-icon">✦</span>
