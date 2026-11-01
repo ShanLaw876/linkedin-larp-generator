@@ -194,13 +194,26 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, role, win, tone: form.tone }),
     })
-    const data = await response.json()
+    const responseText = await response.text()
+    let data = {}
+
+    if (responseText.trim()) {
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        throw new Error('The AI service returned an invalid response. Please try Classic LARP.')
+      }
+    }
 
     if (!response.ok) {
       throw new Error(data.error || 'AI generation failed. Classic LARP is still available.')
     }
 
     const generated = data.post
+    if (!generated || typeof generated !== 'object') {
+      throw new Error('The AI service returned an incomplete response. Please try Classic LARP.')
+    }
+
     return {
       ...generated,
       name,
