@@ -18,6 +18,20 @@ function sendJson(response, status, payload) {
   response.end(JSON.stringify(payload))
 }
 
+function sanitizeUpstreamError(body) {
+  return body
+    .replace(/Bearer\s+[^\s"',}]+/gi, 'Bearer [redacted]')
+    .replace(/(["']?(?:api[_-]?key|authorization|access[_-]?token|refresh[_-]?token|token)["']?\s*[:=]\s*["']?)[^"',}\s]+/gi, '$1[redacted]')
+    .slice(0, 2_000)
+}
+
+function logUpstreamFailure(status, body) {
+  console.error('[Featherless] request failed', {
+    status,
+    response: sanitizeUpstreamError(body),
+  })
+}
+
 async function serveFrontend(pathname, response) {
   const filePath = pathname === '/' ? '/index.html' : pathname
   const safePath = path.normalize(filePath).replace(/^(\.\.[/\\])+/, '')
@@ -98,7 +112,7 @@ async function readBody(request) {
 
 async function generatePost(input) {
   if (!process.env.FEATHERLESS_API_KEY) {
-    const error = new Error('FEATHERLESS_API_KEY is not configured on the server.')
+    const error = new Error('AI generation is currently unavailable. Please try Classic LARP.')
     error.status = 503
     throw error
   }
@@ -143,7 +157,9 @@ async function generatePost(input) {
     })
 
     if (!apiResponse.ok) {
-      const error = new Error(`Featherless returned HTTP ${apiResponse.status}.`)
+      const errorBody = await apiResponse.text()
+      logUpstreamFailure(apiResponse.status, errorBody)
+      const error = new Error('AI generation is currently unavailable. Please try Classic LARP.')
       error.status = apiResponse.status === 429 ? 429 : 502
       throw error
     }
