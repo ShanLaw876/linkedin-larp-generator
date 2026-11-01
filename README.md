@@ -76,6 +76,8 @@ Featherless AI
   template style as structured prompt data.
 - The prompt will require a credible post under 180 words, one specific takeaway, and 2–4
   relevant hashtags. It will forbid invented metrics, employers, customers, awards, or outcomes.
+- AI tone behavior is explicit: Professional is serious and useful, Humblebrag is lightly
+  self-aware, and Absolutely unhinged is intentionally absurd.
 - Timeouts, non-2xx responses, malformed model output, missing configuration, and rate limits will
   return explicit errors. The frontend will offer Classic LARP instead of a success-shaped AI
   fallback.

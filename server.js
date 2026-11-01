@@ -8,6 +8,15 @@ const model = process.env.FEATHERLESS_MODEL || 'Qwen/Qwen3-8B'
 const featherlessUrl = 'https://api.featherless.ai/v1/chat/completions'
 const publicDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'dist')
 
+const toneInstructions = {
+  professional:
+    'Write a serious, credible, useful post. Use a calm professional voice, a concrete lesson, and no jokes, fake metrics, dramatic claims, or corporate parody.',
+  humblebrag:
+    'Write a mostly credible post with light self-aware humor. Keep the accomplishment and lesson useful, but allow one modestly playful line or gentle exaggeration. Do not become absurd.',
+  unhinged:
+    'Write an intentionally ridiculous LinkedIn parody. Use wildly overconfident corporate language, dramatic framing, and absurd but harmless comparisons while keeping the real accomplishment recognizable. Make the joke obvious.',
+}
+
 const jsonHeaders = {
   'Content-Type': 'application/json',
   'Cache-Control': 'no-store',
@@ -151,6 +160,7 @@ async function generatePost(input) {
     'The lesson should be practical and specific. The close should be a natural ending or question.',
     'Hashtags must be an array of 2 to 4 short strings without the # character.',
     'Do not invent metrics, employers, customers, awards, or outcomes.',
+    `Tone direction: ${toneInstructions[input.tone]}`,
     `Tone: ${input.tone}.`,
     `Name: ${input.name}`,
     `Role: ${input.role}`,
@@ -172,7 +182,7 @@ async function generatePost(input) {
         messages: [
           {
             role: 'system',
-            content: 'You are a thoughtful LinkedIn writing assistant with a sense of humor.',
+            content: 'You are a LinkedIn writing assistant. Follow the requested tone precisely.',
           },
           { role: 'user', content: prompt },
         ],
