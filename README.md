@@ -1,33 +1,41 @@
 # LinkedIn LARP Generator
 
-A frontend-only React/Vite hackathon project that turns a real accomplishment into a polished LinkedIn post with just enough self-awareness.
+Turn a real accomplishment into a polished LinkedIn post with just enough self-awareness.
+Classic LARP uses local templates; AI LARP uses Featherless AI for more personalized writing.
 
 ## Features
 
-- Name, job title, and accomplishment inputs
+- Name, job title, accomplishment, and tone inputs
 - Professional, humblebrag, and absolutely unhinged tones
-- 11 varied post templates with practical lessons and tone-specific hashtags
-- Randomized fictional engagement stats
-- Responsive LinkedIn-style result card
-- Copy-to-clipboard support
-- Classic LARP fallback when AI is unavailable
-- Optional Featherless AI generation through a server-side API
+- Classic LARP mode with 11 deterministic templates
+- AI LARP mode powered by Featherless AI
+- Practical takeaways and tone-specific hashtags
+- Fictional engagement stats and LinkedIn-style preview
+- Copy post to clipboard
+- Download the generated preview as a crisp `linkedin-larp-post.png`
+- Explicit AI loading/error states with one-click Classic LARP fallback
 
-## Run locally
+## Local development
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Classic LARP works without environment variables. Start the API server:
+
+```bash
 npm run api
 ```
 
-In a second terminal, run the Vite frontend:
+In a second terminal, start the Vite development server:
 
 ```bash
 npm run dev
 ```
 
-Classic LARP works without environment variables. To enable AI LARP locally, set the API
-variables before starting the API server:
+To enable AI LARP locally, configure Featherless before starting the API:
 
 ```bash
 FEATHERLESS_API_KEY=your-key \
@@ -35,75 +43,71 @@ FEATHERLESS_MODEL=Qwen/Qwen3-8B \
 npm run api
 ```
 
-## Validate and build
+The browser never receives the Featherless API key.
+
+## Validation and production build
 
 ```bash
 npm run lint
 npm run build
 ```
 
-The app can be deployed as a Render web service. Use `npm run build` as the build command and
-`npm run start` as the start command. The Node server serves both the built frontend and the
-`/api` endpoint.
+The production server serves both the built React app and the API:
 
-## AI LARP mode
+```bash
+npm run start
+```
 
-Classic LARP remains the default, deterministic generator and fallback. AI LARP uses Featherless
-AI's OpenAI-compatible chat-completions API to turn the same inputs into a more personalized
-LinkedIn post.
+Useful endpoints:
 
-### Planned architecture
+- `GET /` — built React application
+- `GET /api/health` — API health check
+- `POST /api/generate` — Featherless AI generation
+
+## AI LARP architecture
 
 ```text
-React static frontend
-        |
-        | POST /api/generate
-        v
-Render web service / server function
-        |
-        | Authorization: Bearer $FEATHERLESS_API_KEY
-        v
+React frontend
+      |
+      | POST /api/generate
+      v
+Node.js server
+      |
+      | Bearer token from FEATHERLESS_API_KEY
+      v
 Featherless AI
 ```
 
-- The browser will never receive `FEATHERLESS_API_KEY`.
-- The server will call `https://api.featherless.ai/v1/chat/completions`.
-- The default model target is `Qwen/Qwen3-8B`, which Featherless lists as a text-generation model
-  suitable for conversational writing. The model remains configurable with `FEATHERLESS_MODEL`.
-  The previously used Meta Llama model is gated for this organization unless Hugging Face OAuth is
-  connected, so it should not be used without that extra setup.
-- The server will send the user's accomplishment, role, selected tone, and optional classic
-  template style as structured prompt data.
-- The prompt will require a credible post under 180 words, one specific takeaway, and 2–4
-  relevant hashtags. It will forbid invented metrics, employers, customers, awards, or outcomes.
-- AI tone behavior is explicit: Professional is serious and useful, Humblebrag is lightly
-  self-aware, and Absolutely unhinged is intentionally absurd.
-- Timeouts, non-2xx responses, malformed model output, missing configuration, and rate limits will
-  return explicit errors. The frontend will offer Classic LARP instead of a success-shaped AI
-  fallback.
+The server calls Featherless's OpenAI-compatible endpoint:
 
-Implemented locally:
+```text
+https://api.featherless.ai/v1/chat/completions
+```
 
-- `POST /api/generate` validates input, calls Featherless, and normalizes JSON or plain-text model
-  responses into the structured post format.
-- The React app includes Classic LARP and AI LARP modes using the same result card.
-- AI loading and error states are explicit, with a one-click Classic LARP fallback.
-- API timeouts, missing configuration, rate limits, non-2xx responses, and malformed output are
-  reported without exposing the Featherless key.
+The default model is `Qwen/Qwen3-8B`, configurable with `FEATHERLESS_MODEL`. The server validates
+inputs, applies the selected tone direction, normalizes JSON or plain-text model responses, and
+returns a consistent post shape. It also handles timeouts, rate limits, non-2xx responses,
+malformed output, and missing configuration without exposing credentials.
 
-For Render, create a web service using:
+Tone behavior:
+
+- **Professional:** serious, credible, and useful
+- **Humblebrag:** mostly credible with light self-aware humor
+- **Absolutely unhinged:** intentionally absurd LinkedIn parody
+
+## Deploy on Render
+
+Create a **Web Service**, not a Static Site:
 
 - Build command: `npm run build`
 - Start command: `npm run start`
 - Environment variable: `FEATHERLESS_API_KEY`
 - Optional environment variable: `FEATHERLESS_MODEL`
 
-Do not use the old static-site publish directory setup for AI mode; static hosting cannot run the
-server-side Featherless proxy.
-
-Required Render environment variables:
+Recommended model variable:
 
 ```text
-FEATHERLESS_API_KEY=your-key
 FEATHERLESS_MODEL=Qwen/Qwen3-8B
 ```
+
+Keep the API key only in Render's environment settings.
