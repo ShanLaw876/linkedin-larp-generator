@@ -187,8 +187,9 @@ async function generatePost(input) {
           { role: 'user', content: prompt },
         ],
         temperature: 0.8,
-        max_tokens: 350,
+        max_tokens: 500,
         response_format: { type: 'json_object' },
+        chat_template_kwargs: { enable_thinking: false },
       }),
       signal: controller.signal,
     })
@@ -202,8 +203,17 @@ async function generatePost(input) {
     }
 
     const data = await apiResponse.json()
-    const content = data.choices?.[0]?.message?.content
-    if (typeof content !== 'string') {
+    const message = data.choices?.[0]?.message
+    const content =
+      typeof message?.content === 'string'
+        ? message.content
+        : Array.isArray(message?.content)
+          ? message.content
+              .filter((part) => part && part.type === 'text')
+              .map((part) => part.text)
+              .join('\n')
+          : ''
+    if (!content.trim()) {
       throw new Error('Featherless returned an empty response.')
     }
 
