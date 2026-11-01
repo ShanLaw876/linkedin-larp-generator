@@ -82,7 +82,8 @@ Featherless AI
 
 Implemented locally:
 
-- `POST /api/generate` validates input, calls Featherless, and validates the structured response.
+- `POST /api/generate` validates input, calls Featherless, and normalizes JSON or plain-text model
+  responses into the structured post format.
 - The React app includes Classic LARP and AI LARP modes using the same result card.
 - AI loading and error states are explicit, with a one-click Classic LARP fallback.
 - API timeouts, missing configuration, rate limits, non-2xx responses, and malformed output are

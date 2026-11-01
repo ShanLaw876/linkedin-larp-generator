@@ -63,16 +63,42 @@ async function serveFrontend(pathname, response) {
 }
 
 function extractJson(content) {
-  const fenced = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
-  const candidate = fenced ? fenced[1] : content
+  const withoutThinking = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+  const fenced = withoutThinking.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
+  const candidate = fenced ? fenced[1] : withoutThinking
   const start = candidate.indexOf('{')
   const end = candidate.lastIndexOf('}')
 
   if (start === -1 || end <= start) {
-    throw new Error('The AI response did not contain a JSON post.')
+    return null
   }
 
-  return JSON.parse(candidate.slice(start, end + 1))
+  try {
+    return JSON.parse(candidate.slice(start, end + 1))
+  } catch {
+    return null
+  }
+}
+
+function postFromPlainText(content) {
+  const cleanContent = content
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/```(?:text|markdown)?/gi, '')
+    .replace(/```/g, '')
+    .trim()
+  const paragraphs = cleanContent.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean)
+
+  if (!cleanContent || paragraphs.length === 0) {
+    throw new Error('The AI response was empty.')
+  }
+
+  return {
+    hook: paragraphs[0].slice(0, 180),
+    body: paragraphs.slice(1, -1).join('\n\n') || paragraphs[0],
+    lesson: 'A practical reminder: consistent progress is easier to sustain when the next step is clear.',
+    close: paragraphs.at(-1),
+    hashtags: ['ProfessionalGrowth', 'LearningInPublic'],
+  }
 }
 
 function validatePost(post) {
@@ -152,6 +178,7 @@ async function generatePost(input) {
         ],
         temperature: 0.8,
         max_tokens: 350,
+        response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
     })
@@ -170,7 +197,8 @@ async function generatePost(input) {
       throw new Error('Featherless returned an empty response.')
     }
 
-    return validatePost(extractJson(content))
+    const parsedPost = extractJson(content) || postFromPlainText(content)
+    return validatePost(parsedPost)
   } catch (error) {
     if (error.name === 'AbortError') {
       const timeoutError = new Error('Featherless took too long to respond.')
